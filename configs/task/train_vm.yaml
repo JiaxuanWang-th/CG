@@ -1,0 +1,22 @@
+mode: train
+load_ckpt: experiments/vm/checkpoint_55.pkl
+
+debug: False
+
+components:
+  data: train
+  transform: vm
+  system: vm
+  model: vm
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.00001
+
+trainer:
+  epochs: 100
+  save_every: 20
+  start_epoch: 55
