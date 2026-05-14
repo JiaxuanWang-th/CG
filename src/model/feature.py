@@ -1,3 +1,6 @@
+# DGCNN(Dynaic Graph Conv)
+# 在特征空间终动态构建图：对每个点Xi用KNN找邻域点Xj。然后处理拼接后的特征[x_i, x_j - x_i]
+# Xj-Xi编码了局部相对位置
 from typing import Optional
 from jittor import nn
 
@@ -8,12 +11,14 @@ class EdgeConv(nn.Module):
         super().__init__()
         
         if activation == 'ReLU':
+            # 处理拼接后的特征
             self.mlp = nn.Sequential(
-                nn.Linear(2 * in_channels, out_channels),
+                nn.Linear(2 * in_channels, out_channels), # 2 * in_channels, [x_i, x_j - x_i]
                 nn.ReLU(),
                 nn.Linear(out_channels, out_channels),
                 nn.ReLU()
             )
+            # 残差
             self.lin = nn.Sequential(
                 nn.Linear(in_channels, out_channels),
                 nn.ReLU()
@@ -60,8 +65,10 @@ class DynamicEdgeConv(EdgeConv):
         super().__init__(in_channels, out_channels, activation)
     
     def execute(self, x, edge_index):
+        # 每一层之后应该重新计算KNN
         return super().execute(x, edge_index)
 
+# 三层图卷积：x1, x2, x1+x2
 class FeatureExtraction(nn.Module):
     def __init__(self, k=32, input_dim=0, embedding_dim=512, distance_estimation=False):
         super().__init__()
@@ -75,7 +82,7 @@ class FeatureExtraction(nn.Module):
         self.conv2 = DynamicEdgeConv(embedding_dim // 8, embedding_dim // 4)
         self.conv3 = DynamicEdgeConv(
             embedding_dim // 8 + embedding_dim // 4,
-            embedding_dim,
+            embedding_dim,   
             activation=None
         )
 
@@ -83,11 +90,12 @@ class FeatureExtraction(nn.Module):
     def get_edge_index(self, x):
         # x: (B, N, C)
         B, N, _ = x.shape
+        # 每个点最近的 k+1 个点的索引
         knn_idx = get_knn_idx(x, x, self.k + 1)  # (B, N, k+1)
-        knn_idx = knn_idx[:, :, 1:]
+        knn_idx = knn_idx[:, :, 1:] # 去掉自身
         base = jt.arange(B) * N  # (B,)
         base = base.reshape(B, 1, 1)
-        
+        # batch 偏移量
         knn_idx = knn_idx + base  # (B, N, k)
         
         dst = jt.arange(N)
