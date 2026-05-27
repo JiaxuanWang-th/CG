@@ -3,6 +3,27 @@ from typing import Optional, Tuple, Dict
 
 import numpy as np
 
+
+def normalize_unit_sphere(pc: np.ndarray):
+    """
+    与训练 AugmentNormalizePC / 官方 NormalizeUnitSphere 一致。
+    Returns:
+        normalized (N, 3), center (3,), scale scalar
+    """
+    p_max = pc.max(axis=0)
+    p_min = pc.min(axis=0)
+    center = (p_max + p_min) / 2
+    pc = pc - center
+    scale = float(np.sqrt((pc ** 2).sum(axis=1).max()))
+    scale = max(scale, 1e-8)
+    pc = pc / scale
+    return pc, center.astype(np.float32), np.float32(scale)
+
+
+def denormalize_unit_sphere(pc: np.ndarray, center: np.ndarray, scale: np.float32):
+    return pc * scale + center
+
+
 def assert_ndarray(arr, name: str="arr", shape: Optional[Tuple[int, ...]]=None, dtype=None):
     if not isinstance(arr, np.ndarray):
         raise ValueError(f"{name} must be a numpy.ndarray or None, got {type(arr)}")

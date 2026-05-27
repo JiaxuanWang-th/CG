@@ -23,6 +23,40 @@ def load(task: str, path: str) -> Dict:
     print(f"\033[92mload {task} config: {path}\033[0m")
     return OmegaConf.to_container(OmegaConf.load(path)) # type: ignore
 
+def preflight_train_data(train_dataset_config) -> None:
+    """Fail fast with a clear message when training meshes are missing."""
+    if train_dataset_config is None:
+        return
+    dp = train_dataset_config.datapath
+    root = dp.input_dataset_dir
+    data_name = dp.data_name or ""
+    if not os.path.isdir(root):
+        raise FileNotFoundError(
+            f"Training data directory not found: {os.path.abspath(root)}\n"
+            "Download A榜训练集 dataset_train.tar.gz and extract under the project root:\n"
+            "  cd /home/cslab/CG && tar xzf /path/to/dataset_train.tar.gz\n"
+            "Expected layout: dataset_train/shapenet/<synset>/<model_id>/models/model_normalized.obj\n"
+            "Or set input_dataset_dir in configs/data/train.yaml to your extracted path."
+        )
+    # probe a few entries from the datalist
+    checked = 0
+    missing = 0
+    for rel in dp.filepaths[:20]:
+        mesh_path = os.path.join(root, rel, data_name) if data_name else os.path.join(root, rel)
+        checked += 1
+        if not os.path.isfile(mesh_path):
+            missing += 1
+    if missing == checked:
+        sample = os.path.join(root, dp.filepaths[0], data_name) if dp.filepaths else root
+        raise FileNotFoundError(
+            f"No mesh files found under {os.path.abspath(root)} "
+            f"(checked {checked} samples, e.g. {sample}).\n"
+            "Ensure dataset_train is fully extracted, not only datalist/*.txt."
+        )
+    if missing > 0:
+        print(f"\033[33mWarning: {missing}/{checked} sampled train paths missing under {root}\033[0m")
+
+
 def debug_fn(data: PCDatasetModule):
     train_dataloader = data.train_dataloader()
     assert train_dataloader is not None, "train_dataloader is None, cannot debug"
@@ -83,6 +117,11 @@ if __name__ == "__main__":
         model = None
     else:
         model_config = load('model', os.path.join('configs/model', model_config))
+        # stage-wise pretrained weights (task yaml overrides model yaml)
+        for key in ('vm_ckpt', 'cvm_ckpt'):
+            if task.get(key):
+                model_config[key] = task[key]
+                print(f"\033[92muse {key}: {task[key]}\033[0m")
         model = get_model(model_config=model_config, transform_config=transform_config)
     
     train_transform = (Transform.parse(**transform_config.get('train_transform', {}))) if model is None else model.get_train_transform()
@@ -129,8 +168,10 @@ if __name__ == "__main__":
         system = None
     
     if mode == 'debug':
+        preflight_train_data(train_dataset_config)
         debug_fn(data=dataset_module)
     elif mode == 'train':
+        preflight_train_data(train_dataset_config)
         assert system is not None, "system is None, cannot train"
         system.train()
     elif mode == 'predict':

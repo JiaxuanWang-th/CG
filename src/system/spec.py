@@ -24,7 +24,11 @@ def get_optimizer(optimizer_config, model):
     if __target__ not in MAPPING:
         raise ValueError(f"unsupported optimizer: {__target__}")
     OptimizerClass = MAPPING[__target__]
-    optimizer = OptimizerClass(model.parameters(), **optimizer_config)
+    if hasattr(model, 'get_trainable_parameters'):
+        params = model.get_trainable_parameters()
+    else:
+        params = model.parameters()
+    optimizer = OptimizerClass(params, **optimizer_config)
     return optimizer
 
 class DummyWriter():
@@ -69,7 +73,11 @@ class DummySystem():
         self._validation_loss = defaultdict(list)
     
     def forward(self, batch, validate: bool=False): # return loss sum
-        loss_dict = self.model.training_step(batch)
+        if validate:
+            with jt.no_grad():
+                loss_dict = self.model.training_step(batch)
+        else:
+            loss_dict = self.model.training_step(batch)
         assert isinstance(loss_dict, dict), "loss_dict must be a dict containing loss/metrics"
         assert self.loss_config is not None, "do not have loss_confing"
         loss_sum = 0.
@@ -165,6 +173,7 @@ class DummySystem():
                 self.optimizer.step()
                 self.on_train_batch_end()
             self.on_train_epoch_end()
+            jt.gc()
             
             self.model.eval()
             validate_dataloader = self.dataset_module.validate_dataloader()

@@ -1,0 +1,16 @@
+mode: predict
+debug: false
+
+# Stage1 VM only — 用于对比 Stage3 是否导致聚类
+load_ckpt: /home/cslab/CG/experiments/vm/checkpoint_49.pkl
+
+components:
+  data: predict_mini
+  transform: predict
+  system: vm
+  model: vm
+
+writer:
+  __target__: vm
+  save_dir: results_vm_mini
+  save_name: denoised

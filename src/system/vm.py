@@ -5,6 +5,7 @@ import os
 
 from .spec import DummySystem, DummyWriter
 from ..data.asset import Asset, Exporter
+from ..data.utils import denormalize_unit_sphere
 
 class VMWriter(DummyWriter):
     
@@ -14,18 +15,31 @@ class VMWriter(DummyWriter):
         self.save_name = save_name
         self.output_format = output_format
     
+    @staticmethod
+    def _submission_relpath(npy_path: str) -> str:
+        """.../shapenet/<synset>/<id>/noisy.npy -> shapenet/<synset>/<id>"""
+        norm = npy_path.replace("\\", "/")
+        parts = norm.split("/")
+        if "shapenet" in parts:
+            i = parts.index("shapenet")
+            return os.path.join(*parts[i:-1])
+        return os.path.dirname(norm)
+
     def write(self, batch, prediction: List[Dict], dataset_module=None):
-        pc_noisy_batch = batch['pc_noisy']
         for i, asset in enumerate(batch['asset']):
             path = asset.path
             assert path is not None, "asset path is None"
-            dirname = os.path.join(self.save_dir, os.path.dirname(path))
+            dirname = os.path.join(self.save_dir, self._submission_relpath(path))
             os.makedirs(dirname, exist_ok=True)
             denoised = prediction[i]['pc_denoised']
             if isinstance(denoised, np.ndarray):
                 denoised_np = denoised
             else:
                 denoised_np = denoised.numpy()
+            if asset.norm_center is not None and asset.norm_scale is not None:
+                denoised_np = denormalize_unit_sphere(
+                    denoised_np, asset.norm_center, np.float32(asset.norm_scale)
+                )
             if self.output_format == 'npy':
                 np.save(os.path.join(dirname, f"{self.save_name}.npy"), denoised_np.astype(np.float32))
             else:

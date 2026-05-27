@@ -1,7 +1,7 @@
 predict_dataset:
   shuffle: False
   batch_size: 1
-  num_workers: 2
+  num_workers: 0
   datapath:
     input_dataset_dir: /home/cslab/dataset_test_noisy
     use_prob: False
@@ -10,5 +10,5 @@ predict_dataset:
     ignore_check: false
     data_path:
       shapenet: [
-        [./datalist/test.txt, 1.0],
+        [./datalist/test_mini.txt, 1.0],
       ]
