@@ -8,7 +8,7 @@ import numpy as np
 
 from .asset import Asset
 from .spec import ConfigSpec
-from .utils import random_euler_rotation, sample_vertex_groups
+from .utils import random_euler_rotation, sample_vertex_groups, normalize_unit_sphere
 
 @dataclass(frozen=True)
 class Augment(ConfigSpec):
@@ -56,12 +56,25 @@ class AugmentNormalizePC(Augment):
     def apply(self, asset: Asset, **kwargs):
         pc = asset.sampled_vertices
         assert pc is not None, "sampled_vertices is None, cannot apply AugmentNormalizePC"
-        p_max = pc.max(axis=0)
-        p_min = pc.min(axis=0)
-        center = (p_max + p_min) / 2
-        pc = pc - center
-        scale = np.sqrt((pc**2).sum(axis=1).max()).max()
-        asset.sampled_vertices = pc / scale
+        pc, center, scale = normalize_unit_sphere(pc)
+        asset.sampled_vertices = pc
+
+@dataclass(frozen=True)
+class AugmentNormalizeNoisyPC(Augment):
+    """推理：对 noisy.npy 做单位球归一化，并记录 center/scale 供反归一化。"""
+
+    @classmethod
+    def parse(cls, **kwargs) -> 'AugmentNormalizeNoisyPC':
+        cls.check_keys(kwargs)
+        return AugmentNormalizeNoisyPC(**kwargs)
+
+    def apply(self, asset: Asset, **kwargs):
+        pc = asset.sampled_vertices_noisy
+        assert pc is not None, "sampled_vertices_noisy is None, cannot apply AugmentNormalizeNoisyPC"
+        pc, center, scale = normalize_unit_sphere(pc)
+        asset.sampled_vertices_noisy = pc
+        asset.norm_center = center
+        asset.norm_scale = float(scale)
 
 @dataclass(frozen=True)
 class AugmentAddNoise(Augment):
@@ -81,6 +94,11 @@ class AugmentAddNoise(Augment):
         noise_std = np.random.uniform(self.noise_std_min, self.noise_std_max)
         noise = np.random.laplace(0, noise_std, size=pc.shape)
         asset.sampled_vertices_noisy = pc + noise
+        # L1/L2 noise levels for StraightPCF CVM & distance-head training
+        noise_l1 = np.random.laplace(0, self.noise_std_min, size=pc.shape)
+        noise_l2 = np.random.laplace(0, self.noise_std_max, size=pc.shape)
+        asset.sampled_vertices_noisy_l1 = pc + noise_l1
+        asset.sampled_vertices_noisy_l2 = pc + noise_l2
 
 @dataclass(frozen=True)
 class AugmentLinear(Augment):
@@ -137,46 +155,67 @@ class AugmentPatch(Augment):
     
     def apply(self, asset: Asset, **kwargs):
         pc = asset.sampled_vertices
-        pc_noisy = asset.sampled_vertices_noisy
-        
         assert pc is not None
-        assert pc_noisy is not None
-        
-        N = pc_noisy.shape[0]
-        
-        seed_idx = np.random.permutation(N)[:self.num_patches]   # (P,)
-        seed_points = pc_noisy[seed_idx]                         # (P, 3)
-        
-        tree = cKDTree(pc_noisy)
-        _, nn_idx = tree.query(seed_points, k=self.patch_size)   # (P, M)
 
-        pat_A = pc_noisy[nn_idx]  # (P, M, 3)
-        pat_B = pc[nn_idx]        # (P, M, 3)
+        # StraightPCF uses L2 (max noise) for patch extraction; fallback to single noise level
+        pc_l2 = getattr(asset, "sampled_vertices_noisy_l2", None)
+        if pc_l2 is None:
+            pc_l2 = asset.sampled_vertices_noisy
+        assert pc_l2 is not None
 
-        l1, l2 = 1e-8, 1.0
-        t = np.random.rand(self.num_patches, self.patch_size, 1)
-        t = (l2 - l1) * t + l1
-        
-        pat_t = t * pat_B + (1 - t) * pat_A
-        seed_points_t = (
-            t[:, 0:1, :] * pc[seed_idx][:, None, :] +
-            (1 - t[:, 0:1, :]) * pc_noisy[seed_idx][:, None, :]
-        )
-        
-        pat_A = pat_A - seed_points_t
-        pat_B = pat_B - seed_points_t
-        pat_t = pat_t - seed_points_t
-        
+        N = pc_l2.shape[0]
+        seed_idx = np.random.permutation(N)[: self.num_patches]
+        seed_points = pc_l2[seed_idx]
+
+        tree = cKDTree(pc_l2)
+        _, nn_idx = tree.query(seed_points, k=self.patch_size)
+
+        pat_a = pc_l2[nn_idx]
+        pat_b = pc[nn_idx]
+
         if asset.meta is None:
             asset.meta = {}
-        asset.meta['pc_noisy'] = pat_A
-        asset.meta['pc_clean'] = pat_B
-        asset.meta['pc_mix'] = pat_t
+
+        if not self.train_cvm_network:
+            l1, l2 = 1e-8, 1.0
+            t = np.random.rand(self.num_patches, self.patch_size, 1)
+            t = (l2 - l1) * t + l1
+
+            pat_t = t * pat_b + (1 - t) * pat_a
+            seed_points_t = (
+                t[:, 0:1, :] * pc[seed_idx][:, None, :]
+                + (1 - t[:, 0:1, :]) * pc_l2[seed_idx][:, None, :]
+            )
+
+            pat_a = pat_a - seed_points_t
+            pat_b = pat_b - seed_points_t
+            pat_t = pat_t - seed_points_t
+
+            asset.meta["pc_noisy"] = pat_a
+            asset.meta["pc_clean"] = pat_b
+            asset.meta["pc_mix"] = pat_t
+        else:
+            # CVM / StraightPCF: scalar time step per patch (same as official StraightPCF)
+            t_scalar = np.random.rand() * (1.0 - 1e-8) + 1e-8
+            t = np.full((self.num_patches, self.patch_size, 1), t_scalar)
+            # (P, M, 3) — per-point interpolated seed, not (P, 1, 3)
+            seed_points_t = (
+                t * pc[seed_idx][:, None, :]
+                + (1 - t) * pc_l2[seed_idx][:, None, :]
+            )
+
+            asset.meta["pc_noisy_l2"] = pat_a
+            asset.meta["pc_clean"] = pat_b
+            asset.meta["seed_points_t"] = seed_points_t
+            asset.meta["original_time_step"] = np.full(
+                (self.num_patches,), t_scalar, dtype=np.float32
+            )
 
 def get_augments(*args) -> List[Augment]:
     MAP = {
         "sample": AugmentSample,
         "normalize_pc": AugmentNormalizePC,
+        "normalize_noisy_pc": AugmentNormalizeNoisyPC,
         "add_noise": AugmentAddNoise,
         "linear": AugmentLinear,
         "patch": AugmentPatch,

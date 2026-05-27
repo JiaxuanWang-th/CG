@@ -1,5 +1,4 @@
 mode: train
-load_ckpt: experiments/vm/checkpoint_55.pkl
 
 debug: False
 
@@ -18,5 +17,5 @@ optimizer:
 
 trainer:
   epochs: 100
-  save_every: 20
-  start_epoch: 55
+  save_every: 50
+  start_epoch: 0

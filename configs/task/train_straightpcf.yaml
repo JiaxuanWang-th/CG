@@ -1,0 +1,24 @@
+mode: train
+
+# 上一阶段 CVM 权重（加载 velocity_nets + 训练距离头）
+cvm_ckpt: experiments/cvm/checkpoint_19.pkl
+# 续训 StraightPCF 时用 load_ckpt
+# load_ckpt: experiments/straightpcf/checkpoint_39.pkl
+
+components:
+  data: train_spcf
+  transform: straightpcf
+  system: straightpcf
+  model: straightpcf
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+
+trainer:
+  epochs: 100
+  save_every: 5
+  start_epoch: 0

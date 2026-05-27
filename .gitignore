@@ -1,4 +1,9 @@
-tmp_predict1
-tmp_predict
-dataset_test_noisy
-dataset_train
+log.txt
+train_log.txt
+docs/
+results/
+__pycache__/
+*.pyc
+dataset_train/
+dataset_test_noisy/
+tmp_predict*

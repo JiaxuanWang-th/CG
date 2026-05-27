@@ -14,11 +14,13 @@ pip install jittor numpy trimesh scipy omegaconf point-cloud-utils
 ```
 
 ## 数据准备
-1. 将训练数据 `dataset_train.tar.gz` 解压到本目录下：
+1. 将训练数据 `dataset_train.tar.gz` 解压（本机数据在 `/home/dataset_train`）：
    ```bash
-   tar xzf dataset_train.tar.gz
+   # 例如解压到 /home/dataset_train
+   tar xzf dataset_train.tar.gz -C /home
    ```
-   解压后目录：`dataset_train/shapenet/<synset_id>/<model_id>/models/model_normalized.obj`
+   解压后目录：`/home/dataset_train/shapenet/<synset_id>/<model_id>/models/model_normalized.obj`  
+   若路径不同，请修改 `configs/data/train.yaml` 中的 `input_dataset_dir`。
 
 2. 将测试数据 `dataset_test_noisy.zip` 解压到本目录下：
    ```bash
@@ -27,12 +29,37 @@ pip install jittor numpy trimesh scipy omegaconf point-cloud-utils
    解压后目录：`dataset_test_noisy/shapenet/<synset_id>/<model_id>/noisy.npy`
 
 ## 训练
+
+### Baseline：单 VelocityModule
 ```bash
 python run.py --task configs/task/train_vm.yaml
 ```
+
+### StraightPCF 三阶段（推荐冲榜）
+```bash
+# 1) VM
+python run.py --task configs/task/train_vm.yaml
+
+# 2) CVM：修改 configs/task/train_cvm.yaml 中的 vm_ckpt 指向 VM 权重
+python run.py --task configs/task/train_cvm.yaml
+
+# 3) StraightPCF：修改 configs/task/train_straightpcf.yaml 中的 cvm_ckpt 指向 CVM 权重
+python run.py --task configs/task/train_straightpcf.yaml
+```
+
+详见 [docs/STRAIGHTPCF_PORT.md](docs/STRAIGHTPCF_PORT.md)（模块清单与取舍说明）。
+
 训练权重保存在 `experiments/` 目录下。
 
 ## 推理（生成提交文件）
+
+StraightPCF 提交：
+```bash
+# 修改 configs/task/predict_straightpcf.yaml 的 load_ckpt
+python run.py --task configs/task/predict_straightpcf.yaml
+```
+
+Baseline VM：
 修改 `configs/task/predict_vm.yaml` 中的 `load_ckpt` 为你的最佳权重路径，然后运行：
 ```bash
 python run.py --task configs/task/predict_vm.yaml
@@ -61,6 +88,6 @@ python evaluate.py \
     --pred_dir ./results/dataset_test_noisy \
     --gt_dir ./test_gt \
     --noisy_dir ./dataset_test_noisy \
-    --mesh_dir ./dataset_train \
+    --mesh_dir /home/dataset_train \
     --workers 8
 ```
