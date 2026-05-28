@@ -8,7 +8,7 @@
 |------|------|------|------|
 | 1 | `VelocityModule` | `configs/task/train_vm.yaml` | 单 VM，DSM 位移回归 |
 | 2 | `CoupledVMArch` | `configs/task/train_cvm.yaml` | 多 VM 耦合 + 一致性损失 |
-| 3 | `StraightPCF` | `configs/task/train_straightpcf.yaml` | 冻结式 CVM + 可训练距离头 |
+| 3 | `StraightPCF` | `configs/task/train_straightpcf.yaml` | 官方对齐：CVM eval + 全模型 Adam + Chamfer 验证 |
 
 推理（推荐提交用）：
 
@@ -61,12 +61,31 @@ StraightPCF 阶段在 model yaml 或构造前设置：
 cvm_ckpt: experiments/cvm/checkpoint_99.pkl
 ```
 
+## Stage3 官方复现（默认）
+
+```bash
+python run.py --task configs/task/train_straightpcf.yaml
+# 等价官方: Adam 1e-4, batch 8, 90000 iters, val_freq 10000, Gaussian 噪声, tot_its=2
+# Chamfer 验证 + ckpt 存 experiments/straightpcf_official/
+```
+
+| 项目 | 官方 | CG 默认 (`train_straightpcf.yaml`) |
+|------|------|-------------------------------------|
+| Optimizer | `Adam(model.parameters())` | 同左 (`StraightPCFSystem`) |
+| velocity | `eval()` + 反传 | `official_stage3: true`, `freeze_velocity_nets: false` |
+| batch | 8 | 8 (`train_spcf_official`) |
+| 噪声 | Gaussian（官方）/ Laplace（竞赛） | `straightpcf_official.yaml` 默认 **laplace** |
+| 训练步数 | 90000 iter | `max_iters: 90000` |
+| 验证 | Chamfer | `validate_chamfer_transform` + `validate_chamfer()` |
+
+遗留实验配置：`train_straightpcf_ft.yaml`（batch=1，非官方）。
+
 ## 超参建议（对齐官方 test）
 
 `configs/model/straightpcf.yaml`：
 
 - `patch_size: 1000`, `seed_k: 6`, `seed_k_alpha: 1`
-- `tot_its: 2~3`, `niters: 1~3`（高噪声可增大 `niters`）
+- `tot_its: 2`, `niters: 1~3`（高噪声可增大 `niters`）
 - `feat_embedding_dim: 128`（距离头）；`cvm_feat_embedding_dim: 256`（velocity_nets，须与 CVM ckpt 一致）
 
 ## 规则合规

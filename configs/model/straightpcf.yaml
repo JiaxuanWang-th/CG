@@ -3,12 +3,13 @@ frame_knn: 32
 num_train_points: 128
 feat_embedding_dim: 128
 cvm_feat_embedding_dim: 256
-freeze_velocity_nets: true
+official_stage3: true
+freeze_velocity_nets: false
 decoder_hidden_dim: 64
 dsm_sigma: 0.01
 distance_estimation: true
 num_modules: 2
-tot_its: 2
+tot_its: 3
 patch_size: 1000
 seed_k: 6
 seed_k_alpha: 1

@@ -1,16 +1,15 @@
 mode: predict
 debug: false
 
-# Stage1 VM only — 用于对比 Stage3 是否导致聚类
-load_ckpt: experiments/vm/checkpoint_49.pkl
+load_ckpt: experiments/cvm_cons1_lr1e5/checkpoint_best_cd0.0002_epoch13.pkl
 
 components:
   data: predict_mini
   transform: predict
   system: vm
-  model: vm
+  model: cvm
 
 writer:
   __target__: vm
-  save_dir: results_vm_mini
+  save_dir: results_cvm_cons1_mini
   save_name: denoised

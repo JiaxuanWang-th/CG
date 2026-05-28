@@ -71,15 +71,15 @@ if __name__ == "__main__":
         
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", type=str, required=True)
-    parser.add_argument("--seed", type=int, required=False, default=123)
+    parser.add_argument("--seed", type=int, required=False, default=None)
     args = parser.parse_args()
     
-    # seed all
-    jt.set_global_seed(args.seed)
-    np.random.seed(args.seed)
-    random.seed(args.seed)
-    
     task = load('task', args.task)
+    seed = args.seed if args.seed is not None else task.get("seed", 123)
+    jt.set_global_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    print(f"\033[92mseed: {seed}\033[0m")
     mode = task['mode']
     assert mode in ['train', 'predict', 'debug', 'validate']
     components = task['components']

@@ -53,8 +53,11 @@ class StraightPCF(ModelSpec):
             hidden_size=cfg["decoder_hidden_dim"],
         )
 
-        # 默认冻结 CVM：只训练距离头，显存/内存约为全量微调的 1/3
+        # official_stage3: CVM eval + grad (same as train_straightpcf.py)
+        self.official_stage3 = cfg.get("official_stage3", False)
         self.freeze_velocity_nets = cfg.get("freeze_velocity_nets", True)
+        if self.official_stage3:
+            self.freeze_velocity_nets = False
         if self.freeze_velocity_nets:
             self._set_velocity_nets_trainable(False)
 
@@ -68,6 +71,8 @@ class StraightPCF(ModelSpec):
                     p.stop_grad()
 
     def get_trainable_parameters(self):
+        if self.official_stage3:
+            return list(self.parameters())
         params = list(self.encoder.parameters()) + list(self.decoder.parameters())
         if not self.freeze_velocity_nets:
             for mod in self.velocity_nets:
@@ -138,9 +143,9 @@ class StraightPCF(ModelSpec):
         return pcl_next, None
 
     def training_step(self, batch: Dict) -> Dict:
-        if self.freeze_velocity_nets:
-            for mod in self.velocity_nets:
-                mod.eval()
+        # 对齐官方：velocity 保持 eval（BN），全参微调时仍回传梯度
+        for mod in self.velocity_nets:
+            mod.eval()
         self.encoder.train()
         self.decoder.train()
 
