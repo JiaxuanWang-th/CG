@@ -1,14 +1,15 @@
 mode: train
+seed: 2020
 
-# 上一阶段 CVM 权重（加载 velocity_nets + 训练距离头）
-cvm_ckpt: experiments/cvm/checkpoint_19.pkl
-# 续训 StraightPCF 时用 load_ckpt
-# load_ckpt: experiments/straightpcf/checkpoint_39.pkl
+# Official StraightPCF stage 3 (train_straightpcf.py)
+#   Adam lr=1e-4, batch=8, max_iters=90000, val_freq=10000
+#   velocity_nets.eval() + encoder/decoder.train() + grad through CVM
+cvm_ckpt: experiments/cvm_cons1_lr1e5/checkpoint_best_cd0.0002_epoch19.pkl
 
 components:
-  data: train_spcf
-  transform: straightpcf
-  system: straightpcf
+  data: train_spcf_official
+  transform: straightpcf_official
+  system: straightpcf_official
   model: straightpcf
 
 loss:
@@ -17,8 +18,12 @@ loss:
 optimizer:
   __target__: adam
   lr: 0.0001
+  weight_decay: 0
 
 trainer:
-  epochs: 100
-  save_every: 5
-  start_epoch: 0
+  max_iters: 90000
+  val_freq: 5000
+  start_iter: 0
+  log_interval: 100
+  # official default: no clipping (float inf)
+  max_grad_norm: 1000000000

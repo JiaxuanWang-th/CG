@@ -39,9 +39,13 @@ import os
 import sys
 import time
 from multiprocessing import Pool, cpu_count
-from functools import partial
 
 import warnings
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = None  # type: ignore
 warnings.filterwarnings('ignore', category=RuntimeWarning, module='point_cloud_utils')
 
 import numpy as np
@@ -227,6 +231,63 @@ def evaluate_single(args_tuple):
     return (key, cd_pred, cd_noisy, cd_s, p2s_pred_val, p2s_noisy_val, p2s_s)
 
 
+def _run_tasks(tasks, n_workers: int, show_progress: bool = True, verbose: bool = False):
+    """Run evaluate_single on all tasks; optional tqdm progress + running mean scores."""
+    results = []
+    total = len(tasks)
+    pbar = None
+    if show_progress and tqdm is not None:
+        pbar = tqdm(total=total, desc="评测", unit="sample", dynamic_ncols=True)
+    elif show_progress:
+        print(f"评测进度: 0/{total}", end="", flush=True)
+
+    def _consume(result):
+        results.append(result)
+        key, _, _, cd_s, _, _, p2s_s = result
+        n_done = len(results)
+        if pbar is not None:
+            cd_mean = float(np.mean([r[3] for r in results]))
+            postfix = {"CD_avg": f"{cd_mean:.1f}", "last_CD": f"{cd_s:.1f}"}
+            p2s_vals = [r[6] for r in results if r[6] is not None]
+            if p2s_vals:
+                postfix["P2S_avg"] = f"{float(np.mean(p2s_vals)):.1f}"
+            pbar.set_postfix(postfix, refresh=False)
+            pbar.update(1)
+            if verbose:
+                msg = f"  {key}  CD_score={cd_s:.2f}"
+                if p2s_s is not None:
+                    msg += f"  P2S_score={p2s_s:.2f}"
+                tqdm.write(msg)
+        elif show_progress:
+            cd_mean = float(np.mean([r[3] for r in results]))
+            line = f"\r评测进度: {n_done}/{total}  CD_avg={cd_mean:.1f}  last={cd_s:.1f}"
+            p2s_vals = [r[6] for r in results if r[6] is not None]
+            if p2s_vals:
+                line += f"  P2S_avg={float(np.mean(p2s_vals)):.1f}"
+            print(line, end="", flush=True)
+            if verbose:
+                print()
+                msg = f"  {key}  CD_score={cd_s:.2f}"
+                if p2s_s is not None:
+                    msg += f"  P2S_score={p2s_s:.2f}"
+                print(msg)
+
+    if n_workers > 1 and total > 1:
+        with Pool(processes=n_workers) as pool:
+            for result in pool.imap_unordered(evaluate_single, tasks):
+                _consume(result)
+    else:
+        for task in tasks:
+            _consume(evaluate_single(task))
+
+    if pbar is not None:
+        pbar.close()
+    elif show_progress and tqdm is None:
+        print()
+
+    return results
+
+
 # ======================== 主流程 ========================
 
 def main():
@@ -246,7 +307,10 @@ def main():
     parser.add_argument('--noisy_filename', type=str, default='noisy.npy')
     parser.add_argument('--workers', type=int, default=0,
                         help='并行进程数 (0=自动检测 CPU 核数)')
-    parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--verbose', action='store_true',
+                        help='每个样本完成后打印 CD/P2S 得分')
+    parser.add_argument('--no-progress', action='store_true',
+                        help='关闭进度条')
     args = parser.parse_args()
 
     use_p2s = bool(args.mesh_dir)
@@ -280,15 +344,19 @@ def main():
         mesh_path = mesh_samples.get(key) if use_p2s else None
         tasks.append((key, pred_samples[key], gt_samples[key], noisy_samples[key], mesh_path))
 
+    show_progress = not args.no_progress
+    if show_progress and tqdm is None:
+        print("提示: pip install tqdm 可显示更美观的进度条。")
+
     print(f"开始评测 {len(tasks)} 个样本...")
     t0 = time.time()
 
-    # 并行评测
-    if n_workers > 1 and len(tasks) > 1:
-        with Pool(processes=n_workers) as pool:
-            results = pool.map(evaluate_single, tasks)
-    else:
-        results = [evaluate_single(t) for t in tasks]
+    results = _run_tasks(
+        tasks,
+        n_workers=n_workers,
+        show_progress=show_progress,
+        verbose=args.verbose,
+    )
 
     # 汇总
     cd_scores = []
@@ -298,36 +366,46 @@ def main():
     p2s_preds = []
     p2s_noisys = []
 
+    cd_scores_valid = []
+    p2s_scores_valid = []
+    cd_preds = []
+    cd_noisys = []
+    p2s_preds = []
+    p2s_noisys = []
+
     for key, cd_pred, cd_noisy, cd_s, p2s_pred, p2s_noisy, p2s_s in results:
-        cd_scores.append(cd_s)
+        cd_scores_valid.append(cd_s)
         cd_preds.append(cd_pred)
         cd_noisys.append(cd_noisy)
         if p2s_s is not None:
-            p2s_scores.append(p2s_s)
+            p2s_scores_valid.append(p2s_s)
             p2s_preds.append(p2s_pred)
             p2s_noisys.append(p2s_noisy)
-        if args.verbose:
-            msg = f"  {key}  CD_score={cd_s:.2f}"
-            if p2s_s is not None:
-                msg += f"  P2S_score={p2s_s:.2f}"
-            print(msg)
 
-    # 为缺失样本记 0 分
-    for key in missing_pred:
-        cd_scores.append(0.0)
-        if use_p2s:
-            p2s_scores.append(0.0)
+    n_valid = len(cd_scores_valid)
+    n_missing = len(missing_pred)
+    total_samples = n_valid + n_missing
 
-    total_samples = len(common_keys) + len(missing_pred)
-    mean_cd_score = np.mean(cd_scores) if cd_scores else 0.0
-
-    has_p2s = len(p2s_scores) > 0
-    mean_p2s_score = np.mean(p2s_scores) if has_p2s else 0.0
+    mean_cd_valid = float(np.mean(cd_scores_valid)) if cd_scores_valid else 0.0
+    has_p2s = len(p2s_scores_valid) > 0
+    mean_p2s_valid = float(np.mean(p2s_scores_valid)) if has_p2s else 0.0
 
     if has_p2s:
-        final_score = 0.5 * mean_cd_score + 0.5 * mean_p2s_score
+        final_valid = 0.5 * mean_cd_valid + 0.5 * mean_p2s_valid
     else:
-        final_score = mean_cd_score
+        final_valid = mean_cd_valid
+
+    # 官网提交规则：缺失预测按 0 分计入全量平均
+    mean_cd_all = mean_cd_valid
+    mean_p2s_all = mean_p2s_valid
+    final_all = final_valid
+    if n_missing > 0 and total_samples > 0:
+        mean_cd_all = (sum(cd_scores_valid) + 0.0 * n_missing) / total_samples
+        if has_p2s:
+            mean_p2s_all = (sum(p2s_scores_valid) + 0.0 * n_missing) / total_samples
+            final_all = 0.5 * mean_cd_all + 0.5 * mean_p2s_all
+        else:
+            final_all = mean_cd_all
 
     elapsed = time.time() - t0
 
@@ -336,28 +414,32 @@ def main():
     print("  点云降噪评测结果")
     print("=" * 65)
     print(f"  评测样本总数:       {total_samples}")
-    print(f"  有效预测数:         {len(common_keys)}")
-    print(f"  缺失预测数:         {len(missing_pred)}")
+    print(f"  有效预测数:         {n_valid}")
+    print(f"  缺失预测数:         {n_missing}")
     print(f"  并行进程数:         {n_workers}")
     print(f"  评测耗时:           {elapsed:.1f}s")
     print("-" * 65)
-    print(f"  平均 CD_pred:       {np.mean(cd_preds):.8f}" if cd_preds else "")
-    print(f"  平均 CD_noisy:      {np.mean(cd_noisys):.8f}" if cd_noisys else "")
-    print(f"  CD 得分:            {mean_cd_score:.2f} / 100.00")
+    if cd_preds:
+        print(f"  平均 CD_pred:       {np.mean(cd_preds):.8f}")
+        print(f"  平均 CD_noisy:      {np.mean(cd_noisys):.8f}")
+    print(f"  CD 得分 (有效{n_valid}个):     {mean_cd_valid:.2f} / 100.00")
     if has_p2s:
         print(f"  平均 P2S_pred:      {np.mean(p2s_preds):.8f}")
         print(f"  平均 P2S_noisy:     {np.mean(p2s_noisys):.8f}")
-        print(f"  P2S 得分:           {mean_p2s_score:.2f} / 100.00")
+        print(f"  P2S 得分 (有效{n_valid}个):    {mean_p2s_valid:.2f} / 100.00")
+    print(f"  最终得分 (有效样本):          {final_valid:.2f} / 100.00")
+    if n_missing > 0:
         print("-" * 65)
-        print(f"  最终得分 (0.5×CD + 0.5×P2S):  {final_score:.2f} / 100.00")
-    else:
-        print("-" * 65)
-        print(f"  最终得分 (CD):      {final_score:.2f} / 100.00")
-        if not use_p2s:
-            print("  (未提供 mesh_dir，P2S 指标未计算)")
+        print("  [含缺失记0，模拟官网全量提交]")
+        print(f"  CD 得分 (全{total_samples}个):        {mean_cd_all:.2f} / 100.00")
+        if has_p2s:
+            print(f"  P2S 得分 (全{total_samples}个):       {mean_p2s_all:.2f} / 100.00")
+        print(f"  最终得分 (全量):              {final_all:.2f} / 100.00")
+    if not use_p2s:
+        print("  (未提供 mesh_dir，P2S 指标未计算)")
     print("=" * 65)
 
-    return final_score
+    return final_valid if n_missing == 0 else final_all
 
 
 if __name__ == '__main__':

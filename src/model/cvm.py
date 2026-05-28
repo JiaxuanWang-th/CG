@@ -21,6 +21,7 @@ class CoupledVMArch(ModelSpec):
         self.dsm_sigma = cfg["dsm_sigma"]
         self.tot_its = cfg.get("tot_its", 3)
         self.num_modules = cfg.get("num_modules", 2)
+        self.consistency_weight = cfg.get("consistency_weight", 10.0)
 
         vm_ckpt = cfg.get("vm_ckpt", None)
         self.velocity_nets = nn.ModuleList()
@@ -70,7 +71,9 @@ class CoupledVMArch(ModelSpec):
                 consistency_loss = ((pc_interp - pc_noisy) ** 2).sum(dim=-1).mean()
                 total_consistency_loss = total_consistency_loss + consistency_loss
 
-        return (total_dir_loss + 10 * total_consistency_loss) / self.dsm_sigma
+        return (
+            total_dir_loss + self.consistency_weight * total_consistency_loss
+        ) / self.dsm_sigma
 
     def denoise_langevin_dynamics(self, pcl_noisy, num_steps: int = 4):
         B, N, d = pcl_noisy.shape

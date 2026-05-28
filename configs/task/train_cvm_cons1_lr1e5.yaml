@@ -1,0 +1,26 @@
+mode: train
+
+# 实验：consistency_weight=1（model/cvm.yaml），lr=1e-5
+# vm_ckpt: experiments/vm/checkpoint_49.pkl
+load_ckpt: experiments/cvm_cons1_lr1e5/checkpoint_best_cd0.0002_epoch19.pkl
+
+components:
+  data: train
+  transform: cvm
+  system: cvm_cons1_lr1e5
+  model: cvm
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.00001
+
+trainer:
+  epochs: 100
+  save_every: 10
+  start_epoch: 20
+  # 整云 denoise + Chamfer（官方 val）；max_samples 限制耗时，None=全量 validate
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20

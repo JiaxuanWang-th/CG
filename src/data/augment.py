@@ -82,21 +82,31 @@ class AugmentAddNoise(Augment):
     noise_std_min: float
     
     noise_std_max: float
+
+    # official StraightPCF uses Gaussian; competition baseline uses laplace
+    distribution: str = "laplace"
     
     @classmethod
     def parse(cls, **kwargs) -> 'AugmentAddNoise':
         cls.check_keys(kwargs)
         return AugmentAddNoise(**kwargs)
+
+    def _sample_noise(self, std: float, shape):
+        if self.distribution == "gaussian":
+            return np.random.normal(0, std, size=shape)
+        if self.distribution == "laplace":
+            return np.random.laplace(0, std, size=shape)
+        raise ValueError(f"unknown noise distribution: {self.distribution}")
     
     def apply(self, asset: Asset, **kwargs):
         pc = asset.sampled_vertices
         assert pc is not None, "sampled_vertices is None, cannot apply AugmentAddNoise"
         noise_std = np.random.uniform(self.noise_std_min, self.noise_std_max)
-        noise = np.random.laplace(0, noise_std, size=pc.shape)
+        noise = self._sample_noise(noise_std, pc.shape)
         asset.sampled_vertices_noisy = pc + noise
         # L1/L2 noise levels for StraightPCF CVM & distance-head training
-        noise_l1 = np.random.laplace(0, self.noise_std_min, size=pc.shape)
-        noise_l2 = np.random.laplace(0, self.noise_std_max, size=pc.shape)
+        noise_l1 = self._sample_noise(self.noise_std_min, pc.shape)
+        noise_l2 = self._sample_noise(self.noise_std_max, pc.shape)
         asset.sampled_vertices_noisy_l1 = pc + noise_l1
         asset.sampled_vertices_noisy_l2 = pc + noise_l2
 
