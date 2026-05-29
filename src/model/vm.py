@@ -30,6 +30,7 @@ class VelocityModule(ModelSpec):
             k=self.frame_knn,
             input_dim=3,
             embedding_dim=cfg["feat_embedding_dim"],
+            edge_aggr=cfg.get("edge_aggr", "mean"),
         )
         self.decoder = Decoder(
             z_dim=self.encoder.embedding_dim,

@@ -1,12 +1,13 @@
 mode: train
-load_ckpt: experiments/vm/checkpoint_49.pkl
 
+# WARNING: EdgeConv is now max-pool (official). Do NOT load experiments/vm/* (mean-pool ckpts).
+# Use configs/task/train_vm_max.yaml for max-pool VM training from scratch.
 debug: False
 
 components:
   data: train
   transform: vm
-  system: vm
+  system: vm_max
   model: vm
 
 loss:
@@ -14,9 +15,11 @@ loss:
 
 optimizer:
   __target__: adam
-  lr: 0.00001
+  lr: 0.0001
 
 trainer:
   epochs: 100
   save_every: 20
-  start_epoch: 50
+  start_epoch: 0
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20

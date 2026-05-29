@@ -1,5 +1,5 @@
 __target__: VelocityModule
-edge_aggr: mean
+edge_aggr: max
 frame_knn: 32
 patch_size: 1000
 seed_k: 6

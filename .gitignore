@@ -20,6 +20,8 @@ results_official_t1/
 results_official_mod0/
 results_official_cons1/
 results_cvm_mini_old/
-results.zip
 result.zip
+results_val_cvm_cons0/
+results_val_quick/
+results_val_vm_epoch82/
 *.log

@@ -7,8 +7,17 @@ from jittor import nn
 import jittor as jt
 
 class EdgeConv(nn.Module):
-    def __init__(self, in_channels, out_channels, activation: Optional[str]='ReLU'):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        activation: Optional[str] = "ReLU",
+        edge_aggr: str = "mean",
+    ):
         super().__init__()
+        if edge_aggr not in ("mean", "max"):
+            raise ValueError(f"edge_aggr must be mean or max, got {edge_aggr!r}")
+        self.edge_aggr = edge_aggr
         
         if activation == 'ReLU':
             # 处理拼接后的特征
@@ -50,19 +59,33 @@ class EdgeConv(nn.Module):
         msg = self.mlp(tmp)  # (E, out_channels)
         
         N = x.shape[0]
-        out = jt.full((N, msg.shape[1]), 0)
-        cnt = jt.full((N, msg.shape[1]), 0)
-        
-        # scatter mean
-        out = out.scatter_(0, dst.unsqueeze(1).broadcast(msg.shape), msg, reduce='add')
-        cnt = cnt.scatter_(0, dst.unsqueeze(1).broadcast(msg.shape), jt.ones_like(msg), reduce='add')
-        out = out / (cnt + 1)
+        if self.edge_aggr == "max":
+            E = msg.shape[0]
+            k = E // N
+            # Official StraightPCF: max (reshape+max; scatter max has no backward).
+            assert E == N * k, f"EdgeConv expects uniform in-degree, got N={N}, E={E}"
+            out = jt.max(msg.reshape(N, k, -1), dim=1)
+        else:
+            # experiments/vm/* checkpoints were trained with mean aggregation.
+            out = jt.full((N, msg.shape[1]), 0)
+            cnt = jt.full((N, msg.shape[1]), 0)
+            out = out.scatter_(0, dst.unsqueeze(1).broadcast(msg.shape), msg, reduce="add")
+            cnt = cnt.scatter_(
+                0, dst.unsqueeze(1).broadcast(msg.shape), jt.ones_like(msg), reduce="add"
+            )
+            out = out / (cnt + 1)
         out_2 = self.lin(x)
         return out + out_2
 
 class DynamicEdgeConv(EdgeConv):
-    def __init__(self, in_channels, out_channels, activation: Optional[str]='ReLU'):
-        super().__init__(in_channels, out_channels, activation)
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        activation: Optional[str] = "ReLU",
+        edge_aggr: str = "mean",
+    ):
+        super().__init__(in_channels, out_channels, activation, edge_aggr=edge_aggr)
     
     def execute(self, x, edge_index):
         # 每一层之后应该重新计算KNN
@@ -70,7 +93,14 @@ class DynamicEdgeConv(EdgeConv):
 
 # 三层图卷积：x1, x2, x1+x2
 class FeatureExtraction(nn.Module):
-    def __init__(self, k=32, input_dim=0, embedding_dim=512, distance_estimation=False):
+    def __init__(
+        self,
+        k=32,
+        input_dim=0,
+        embedding_dim=512,
+        distance_estimation=False,
+        edge_aggr: str = "mean",
+    ):
         super().__init__()
 
         self.k = k
@@ -78,12 +108,13 @@ class FeatureExtraction(nn.Module):
         self.embedding_dim = embedding_dim
         self.distance_estimation = distance_estimation
 
-        self.conv1 = DynamicEdgeConv(self.input_dim, embedding_dim // 8)
-        self.conv2 = DynamicEdgeConv(embedding_dim // 8, embedding_dim // 4)
+        self.conv1 = DynamicEdgeConv(self.input_dim, embedding_dim // 8, edge_aggr=edge_aggr)
+        self.conv2 = DynamicEdgeConv(embedding_dim // 8, embedding_dim // 4, edge_aggr=edge_aggr)
         self.conv3 = DynamicEdgeConv(
             embedding_dim // 8 + embedding_dim // 4,
-            embedding_dim,   
-            activation=None
+            embedding_dim,
+            activation=None,
+            edge_aggr=edge_aggr,
         )
 
     # ========= edge_index 构建 =========
