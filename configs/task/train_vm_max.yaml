@@ -1,0 +1,27 @@
+mode: train
+
+# EdgeConv max-pool (official-aligned). Train from scratch only.
+# DO NOT set load_ckpt — experiments/vm/* weights used mean aggregation.
+debug: False
+
+load_ckpt: experiments/vm_max/checkpoint_19.pkl
+
+components:
+  data: train_vm_max
+  transform: vm
+  system: vm_max
+  model: vm_max
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+
+trainer:
+  epochs: 100
+  save_every: 20
+  start_epoch: 30
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20

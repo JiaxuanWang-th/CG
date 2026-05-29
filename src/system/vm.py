@@ -3,7 +3,8 @@ from typing import List, Dict, Optional
 import numpy as np
 import os
 
-from .spec import DummySystem, DummyWriter
+from .cvm import CVMSystem
+from .spec import DummyWriter
 from ..data.asset import Asset, Exporter
 from ..data.utils import denormalize_unit_sphere
 
@@ -45,29 +46,5 @@ class VMWriter(DummyWriter):
             else:
                 Exporter.export_obj(denoised_np, os.path.join(dirname, f"{self.save_name}.obj"))
 
-class VMSystem(DummySystem):
-    
-    def __init__(
-        self,
-        dataset_module,
-        model,
-        loss_config=None,
-        optimizer_config=None,
-        trainer_config=None,
-        writer: Optional[DummyWriter]=None,
-        
-        ckpt_save_dir: str="experiments",
-        ckpt_save_name: str="checkpoint",
-    ):
-        super().__init__(
-            dataset_module=dataset_module,
-            model=model,
-            loss_config=loss_config,
-            optimizer_config=optimizer_config,
-            trainer_config=trainer_config,
-            writer=writer,
-            ckpt_save_dir=ckpt_save_dir,
-            ckpt_save_name=ckpt_save_name,
-        )
-    
-    # override functions in dummy system if you want to implement training/validation/prediction logic
+class VMSystem(CVMSystem):
+    """VM epoch training + val patch loss + full-cloud Chamfer (same loop as CVMSystem)."""
