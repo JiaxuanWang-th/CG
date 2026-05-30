@@ -1,15 +1,16 @@
 mode: predict
 debug: false
 
+# vm_max 验证集 CD 最优（epoch 72）
 load_ckpt: experiments/vm_max/checkpoint_best_cd0.0002_epoch72.pkl
 
 components:
-  data: predict_val
+  data: predict
   transform: predict
   system: vm
   model: vm_max
 
 writer:
   __target__: vm
-  save_dir: results_val_vm_max
+  save_dir: results_vm_max_test
   save_name: denoised
