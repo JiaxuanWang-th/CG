@@ -24,4 +24,6 @@ result.zip
 results_val_cvm_cons0/
 results_val_quick/
 results_val_vm_epoch82/
+results_vm_max_test/
+results_val_vm_max/
 *.log
