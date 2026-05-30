@@ -1,7 +1,7 @@
 mode: predict
 debug: false
 
-load_ckpt: experiments/vm_max/checkpoint_best_cd0.0002_epoch72.pkl
+load_ckpt: experiments/vm_max/checkpoint_best_cd0.0002_epoch89.pkl
 
 components:
   data: predict_val
