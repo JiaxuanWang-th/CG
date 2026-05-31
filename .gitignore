@@ -26,4 +26,8 @@ results_val_quick/
 results_val_vm_epoch82/
 results_vm_max_test/
 results_val_vm_max/
+viz_cvm_max_test_epoch39/
+results_val_cvm_max/
+results_cvm_max_test/
+result_cvm_max_epoch39.zip
 *.log

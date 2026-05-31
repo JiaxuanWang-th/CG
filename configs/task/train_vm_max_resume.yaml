@@ -1,0 +1,24 @@
+mode: train
+debug: False
+
+load_ckpt: experiments/vm_max/checkpoint_99.pkl
+
+components:
+  data: train_vm_max_cloud
+  transform: vm
+  system: vm_max
+  model: vm_max
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.00005
+
+trainer:
+  epochs: 200
+  start_epoch: 100
+  save_every: 20
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20
