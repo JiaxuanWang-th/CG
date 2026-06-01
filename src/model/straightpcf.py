@@ -45,6 +45,7 @@ class StraightPCF(ModelSpec):
             input_dim=3,
             embedding_dim=cfg["feat_embedding_dim"],
             distance_estimation=self.distance_estimation,
+            edge_aggr=cfg.get("edge_aggr", "mean"),
         )
         self.decoder = Decoder(
             z_dim=self.encoder.embedding_dim,
