@@ -1,15 +1,15 @@
 mode: predict
 debug: false
 
-load_ckpt: experiments/cvm_max/checkpoint_best_cd0.0002_epoch97.pkl
+load_ckpt: experiments/cvm_max/checkpoint_best_cd0.0002_epoch56.pkl
 
 components:
-  data: predict
+  data: predict_val
   transform: predict
   system: vm
   model: cvm_max
 
 writer:
   __target__: vm
-  save_dir: results_cvm_max_test
+  save_dir: results_val_cvm_max_epoch56
   save_name: denoised

@@ -1,0 +1,19 @@
+# Stage3 on cvm_max stack: max EdgeConv, 4 coupled VM modules (must match cvm_max ckpt)
+__target__: StraightPCF
+edge_aggr: max
+frame_knn: 32
+num_train_points: 128
+feat_embedding_dim: 128
+cvm_feat_embedding_dim: 256
+official_stage3: true
+freeze_velocity_nets: false
+decoder_hidden_dim: 64
+dsm_sigma: 0.01
+distance_estimation: true
+num_modules: 4
+tot_its: 3
+patch_size: 1000
+seed_k: 6
+seed_k_alpha: 1
+niters: 1
+# cvm_ckpt: set in configs/task/train_straightpcf_max.yaml
