@@ -1,7 +1,7 @@
 mode: predict
 debug: false
 
-load_ckpt: experiments/straightpcf_max/checkpoint_best_cd0.0002_iter5000.pkl
+load_ckpt: experiments/straightpcf_max/checkpoint_best_cd0.0001_iter75000.pkl
 
 components:
   data: predict_val
@@ -11,5 +11,5 @@ components:
 
 writer:
   __target__: vm
-  save_dir: results_val_spcf_max
+  save_dir: results_val_spcf_max_iter75000
   save_name: denoised
