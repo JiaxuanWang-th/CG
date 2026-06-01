@@ -1,0 +1,4 @@
+__target__: cvm
+
+ckpt_save_dir: experiments/cvm_cons0_lr1e5
+ckpt_save_name: checkpoint

@@ -1,0 +1,16 @@
+mode: predict
+debug: false
+
+# Stage2 CVM only — CoupledVMArch + patch_based_denoise（无 pred_d）
+load_ckpt: experiments/cvm/checkpoint_39.pkl
+
+components:
+  data: predict_mini
+  transform: predict
+  system: vm
+  model: cvm
+
+writer:
+  __target__: vm
+  save_dir: results_cvm_mini
+  save_name: denoised

@@ -1,0 +1,16 @@
+mode: predict
+debug: false
+
+# Stage3 StraightPCF — 小样本快速测试是否聚类
+load_ckpt: experiments/straightpcf_official/checkpoint_best_cd0.0002_iter5000.pkl
+
+components:
+  data: predict_mini
+  transform: predict
+  system: vm
+  model: straightpcf
+
+writer:
+  __target__: vm
+  save_dir: results_spcf_mini
+  save_name: denoised

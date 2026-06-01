@@ -1,0 +1,23 @@
+mode: train
+
+# 从 CVM 重新训练 Stage3（不 resume StraightPCF ckpt）
+# velocity_nets ← CVM；距离头随机初始化
+cvm_ckpt: experiments/cvm/checkpoint_39.pkl
+
+components:
+  data: train_spcf_ft
+  transform: straightpcf
+  system: straightpcf_ft
+  model: straightpcf
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+
+trainer:
+  epochs: 100
+  save_every: 5
+  start_epoch: 0

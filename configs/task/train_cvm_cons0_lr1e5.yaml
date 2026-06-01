@@ -1,0 +1,24 @@
+mode: train
+
+# CVM 上限实验：consistency_weight=0；VM 用当前最优 ckpt（VM 训出 best_cd 后改这里）
+vm_ckpt: experiments/vm/checkpoint_69.pkl
+
+components:
+  data: train
+  transform: cvm
+  system: cvm_cons0_lr1e5
+  model: cvm_cons0
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.00001
+
+trainer:
+  epochs: 100
+  save_every: 10
+  start_epoch: 0
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20

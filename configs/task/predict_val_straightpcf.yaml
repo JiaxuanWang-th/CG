@@ -1,0 +1,14 @@
+mode: predict
+debug: false
+load_ckpt: experiments/straightpcf_official/checkpoint_best_cd0.0002_iter10000.pkl
+
+components:
+  data: predict_val
+  transform: predict
+  system: vm
+  model: straightpcf
+
+writer:
+  __target__: vm
+  save_dir: results_val_benchmark
+  save_name: denoised
