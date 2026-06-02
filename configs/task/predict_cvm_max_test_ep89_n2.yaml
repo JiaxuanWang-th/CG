@@ -1,0 +1,15 @@
+mode: predict
+debug: false
+
+load_ckpt: experiments/cvm_max/checkpoint_89.pkl
+
+components:
+  data: predict
+  transform: predict
+  system: vm
+  model: cvm_max_predict_n2
+
+writer:
+  __target__: vm
+  save_dir: results_cvm_max_test_ep89_n2
+  save_name: denoised

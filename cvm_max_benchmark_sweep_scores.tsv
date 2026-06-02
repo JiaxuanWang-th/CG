@@ -1,0 +1,23 @@
+tag	total	cd_pred	ckpt
+epoch0	71.05	0.00044159	/home/cslab/CG/experiments/cvm_max/checkpoint_best_cd0.0002_epoch0.pkl
+epoch6	72.62	0.00041798	/home/cslab/CG/experiments/cvm_max/checkpoint_best_cd0.0002_epoch6.pkl
+epoch8	72.79	0.00041986	/home/cslab/CG/experiments/cvm_max/checkpoint_best_cd0.0002_epoch8.pkl
+epoch9	73.91	0.00038487	/home/cslab/CG/experiments/cvm_max/checkpoint_9.pkl
+epoch19	75.58	0.00036214	/home/cslab/CG/experiments/cvm_max/checkpoint_19.pkl
+epoch29	74.24	0.00038851	/home/cslab/CG/experiments/cvm_max/checkpoint_29.pkl
+epoch59	77.62	0.00033932	/home/cslab/CG/experiments/cvm_max/checkpoint_59.pkl
+epoch69	77.36	0.00034422	/home/cslab/CG/experiments/cvm_max/checkpoint_69.pkl
+epoch79	76.86	0.00034937	/home/cslab/CG/experiments/cvm_max/checkpoint_79.pkl
+epoch88	78.08	0.00034204	/home/cslab/CG/experiments/cvm_max/checkpoint_best_cd0.0002_epoch88.pkl
+epoch89	78.25	0.00032846	/home/cslab/CG/experiments/cvm_max/checkpoint_89.pkl
+epoch39	75.28	NA	experiments/cvm_max/checkpoint_best_cd0.0002_epoch39.pkl
+epoch49	76.42	NA	experiments/cvm_max/checkpoint_best_cd0.0002_epoch49.pkl
+epoch56	77.37	NA	experiments/cvm_max/checkpoint_best_cd0.0002_epoch56.pkl
+epoch66	74.27	NA	experiments/cvm_max/checkpoint_best_cd0.0002_epoch66.pkl
+epoch97	76.53	NA	experiments/cvm_max/checkpoint_best_cd0.0002_epoch97.pkl
+epoch99	76.28	NA	experiments/cvm_max/checkpoint_best_cd0.0002_epoch99.pkl
+sweep_base	78.25	0.00032846	n1_t3_k6	/home/cslab/CG/experiments/cvm_max/checkpoint_89.pkl
+sweep_n2	83.81	0.00021905	n2_t3_k6	/home/cslab/CG/experiments/cvm_max/checkpoint_89.pkl
+sweep_n3	76.85	0.00029549	n3_t3_k6	/home/cslab/CG/experiments/cvm_max/checkpoint_89.pkl
+sweep_t4	78.29	0.00032970	n1_t4_k6	/home/cslab/CG/experiments/cvm_max/checkpoint_89.pkl
+sweep_n2t4	83.68	0.00022157	n2_t4_k6	/home/cslab/CG/experiments/cvm_max/checkpoint_89.pkl
