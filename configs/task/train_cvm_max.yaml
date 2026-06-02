@@ -3,6 +3,7 @@ debug: false
 
 # Official-aligned CVM on vm_max: 4 modules, consistency_weight=10, max EdgeConv
 vm_ckpt: experiments/vm_max/checkpoint_best_cd0.0002_epoch89.pkl
+load_ckpt: experiments/cvm_max/checkpoint_99.pkl
 
 components:
   data: train_cvm_max
@@ -18,8 +19,8 @@ optimizer:
   lr: 0.0001
 
 trainer:
-  epochs: 100
+  epochs: 150
   save_every: 10
-  start_epoch: 0
+  start_epoch: 100
   val_chamfer_every: 1
   val_chamfer_max_samples: 20
