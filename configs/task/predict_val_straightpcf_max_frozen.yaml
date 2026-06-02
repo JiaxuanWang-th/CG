@@ -1,0 +1,16 @@
+mode: predict
+debug: false
+
+# 训练完成后，改为 best checkpoint 路径
+load_ckpt: experiments/straightpcf_max_frozen_cvm97/checkpoint_best_cd0.0001_iter60000.pkl
+
+components:
+  data: predict_val
+  transform: predict
+  system: vm
+  model: straightpcf_max_frozen
+
+writer:
+  __target__: vm
+  save_dir: results_val_spcf_frozen_cvm97
+  save_name: denoised

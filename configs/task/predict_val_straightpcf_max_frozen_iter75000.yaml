@@ -1,0 +1,15 @@
+mode: predict
+debug: false
+
+load_ckpt: experiments/straightpcf_max_frozen_cvm97/checkpoint_iter75000.pkl
+
+components:
+  data: predict_val
+  transform: predict
+  system: vm
+  model: straightpcf_max_frozen
+
+writer:
+  __target__: vm
+  save_dir: results_val_spcf_frozen_cvm97_iter75000
+  save_name: denoised

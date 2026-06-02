@@ -1,0 +1,4 @@
+__target__: straightpcf
+
+ckpt_save_dir: experiments/straightpcf_max_frozen_cvm97
+ckpt_save_name: checkpoint

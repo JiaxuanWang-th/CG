@@ -2,7 +2,7 @@ mode: train
 debug: false
 
 # Official-aligned CVM on vm_max: 4 modules, consistency_weight=10, max EdgeConv
-vm_ckpt: experiments/vm_max/checkpoint_best_cd0.0002_epoch89.pkl
+vm_ckpt: experiments/vm_max/checkpoint_best_cd0.0002_epoch128.pkl
 
 components:
   data: train_cvm_max
