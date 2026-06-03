@@ -1,0 +1,12 @@
+tag	ckpt	zip	num_files
+pack_time: 2026-06-03 05:26:25
+best_ep: 125
+best_CD: 0.000156
+best_ckpt: experiments/cvm_max/checkpoint_best_cd0.0002_epoch125.pkl
+late_ep: 149
+late_ckpt: experiments/cvm_max/checkpoint_149.pkl
+reference_online: CVM97=72.60, ep89_n1=69.34
+reference_benchmark: ep97=76.53, ep125=76.18
+
+epoch125_best	experiments/cvm_max/checkpoint_best_cd0.0002_epoch125.pkl	result_cvm_max_epoch125_best.zip	200
+epoch149_near150	experiments/cvm_max/checkpoint_149.pkl	result_cvm_max_epoch149_near150.zip	200
