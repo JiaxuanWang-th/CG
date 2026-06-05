@@ -1,0 +1,23 @@
+mode: train
+debug: false
+
+# Stage 1 multires (cloud): VM max from scratch. Do not load vm_max (32768) ckpts.
+components:
+  data: train_vm_max_multires_cloud
+  transform: vm_multires
+  system: vm_max_multires
+  model: vm_max
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+
+trainer:
+  epochs: 100
+  save_every: 20
+  start_epoch: 0
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20

@@ -1,0 +1,26 @@
+mode: train
+debug: false
+
+# Stage 2 multires (cloud): set vm_ckpt to vm_max_multires best after Stage 1.
+# Do not load cvm_max (32768-line) ckpts.
+vm_ckpt: experiments/vm_max_multires/checkpoint_best_cd0.0002_epoch99.pkl
+
+components:
+  data: train_cvm_max_multires_cloud
+  transform: cvm_multires
+  system: cvm_max_multires
+  model: cvm_max
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+
+trainer:
+  epochs: 100
+  save_every: 10
+  start_epoch: 0
+  val_chamfer_every: 1
+  val_chamfer_max_samples: 20
