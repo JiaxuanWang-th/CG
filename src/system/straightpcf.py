@@ -74,7 +74,7 @@ class StraightPCFSystem:
         else:
             self.optimizer = None
 
-        self._best_chamfer = float("inf")
+        self._best_chamfer = trainer_config.get("resume_best_chamfer", float("inf"))
 
     def _train_one_iter(self, batch) -> tuple:
         self.optimizer.zero_grad()
