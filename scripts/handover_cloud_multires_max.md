@@ -1,5 +1,7 @@
 # 云端交接文档：multires 全链路 VM → CVM → SPCF max
 
+> **文件路径**：`scripts/handover_cloud_multires_max.md`（仓库根目录下 `scripts/`，已纳入 git；`HANDOVER*` 在 `.gitignore` 中，请勿只建根目录副本。）
+
 **交接人**：Jiaxuan  
 **执行机器**：`/home/ubuntu/CG`（RTX 4090/5090，conda 环境 `jittor`）  
 **Git 分支**：`dev/multires-cloud`（**不要**在学校主线 `dev/straightpcf-cvm` 上改 multires 配置）  
