@@ -1,0 +1,8 @@
+tag	pick_iter	val_CD	ckpt	zip	num_files
+pack_time: 2026-06-04 09:41:51
+resume_start: 90000
+max_iters: 250000
+reference_online: SPCF75k=73.53, CVM125=72.72
+
+iter200000_pick200000	200000	0.000137	experiments/straightpcf_max/checkpoint_iter200000.pkl	result_spcf_max_iter200000_pick200000.zip	200
+iter250000_pick250000	250000	0.000137	experiments/straightpcf_max/checkpoint_iter250000.pkl	result_spcf_max_iter250000_pick250000.zip	200
