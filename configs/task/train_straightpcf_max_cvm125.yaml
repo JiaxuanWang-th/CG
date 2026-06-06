@@ -1,0 +1,26 @@
+mode: train
+seed: 123
+
+# CVM max online best: epoch125 (72.72 test). Fresh SPCF 0→90k on ep125 base.
+cvm_ckpt: experiments/cvm_max/checkpoint_best_cd0.0002_epoch125.pkl
+
+components:
+  data: train_spcf_max
+  transform: straightpcf_official
+  system: straightpcf_max_cvm125
+  model: straightpcf_max
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+  weight_decay: 0
+
+trainer:
+  max_iters: 90000
+  val_freq: 5000
+  start_iter: 0
+  log_interval: 100
+  max_grad_norm: 1000000000

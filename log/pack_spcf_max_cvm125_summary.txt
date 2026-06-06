@@ -1,0 +1,18 @@
+[2026-06-05 23:00:47] SPCF max cvm125 pack start | milestones: 75000 45000 90000
+[2026-06-05 23:00:47] reference_online: ep97+SPCF75k=73.53 | CVM125=72.72
+[2026-06-05 23:00:47] === PACK 75000 ckpt=experiments/straightpcf_max_cvm125/checkpoint_best_cd0.0001_iter75000.pkl ===
+[2026-06-05 23:00:47] PREDICT test (niters=1 tot_its=3 seed_k=6) -> results_spcf_max_cvm125_test_iter75000_pick75000
+[2026-06-05 23:44:43] ZIP -> result_spcf_max_cvm125_iter75000_pick75000.zip
+[2026-06-05 23:44:48] DONE iter75000_pick75000: zip=106M denoised.npy=200
+iter75000_pick75000	75000	experiments/straightpcf_max_cvm125/checkpoint_best_cd0.0001_iter75000.pkl	result_spcf_max_cvm125_iter75000_pick75000.zip	200
+[2026-06-05 23:44:49] === PACK 45000 ckpt=experiments/straightpcf_max_cvm125/checkpoint_best_cd0.0001_iter45000.pkl ===
+[2026-06-05 23:44:49] PREDICT test (niters=1 tot_its=3 seed_k=6) -> results_spcf_max_cvm125_test_iter45000_pick45000
+[2026-06-06 00:28:34] ZIP -> result_spcf_max_cvm125_iter45000_pick45000.zip
+[2026-06-06 00:28:39] DONE iter45000_pick45000: zip=106M denoised.npy=200
+iter45000_pick45000	45000	experiments/straightpcf_max_cvm125/checkpoint_best_cd0.0001_iter45000.pkl	result_spcf_max_cvm125_iter45000_pick45000.zip	200
+[2026-06-06 00:28:39] === PACK 90000 ckpt=experiments/straightpcf_max_cvm125/checkpoint_iter90000.pkl ===
+[2026-06-06 00:28:39] PREDICT test (niters=1 tot_its=3 seed_k=6) -> results_spcf_max_cvm125_test_iter90000_pick90000
+[2026-06-06 01:12:26] ZIP -> result_spcf_max_cvm125_iter90000_pick90000.zip
+[2026-06-06 01:12:31] DONE iter90000_pick90000: zip=106M denoised.npy=200
+iter90000_pick90000	90000	experiments/straightpcf_max_cvm125/checkpoint_iter90000.pkl	result_spcf_max_cvm125_iter90000_pick90000.zip	200
+[2026-06-06 01:12:31] ALL DONE. Summary: log/pack_spcf_max_cvm125_summary.txt
