@@ -1,0 +1,8 @@
+[2026-06-06 21:21:07] SPCF max cvm125 50k pack start | milestones: 70000
+[2026-06-06 21:21:07] reference_online: 32768 SPCF ep125 75k/90k=73.58-73.59
+[2026-06-06 21:21:07] === PACK 70000 ckpt=experiments/straightpcf_max_cvm125_50k/checkpoint_best_cd0.0001_iter70000.pkl ===
+[2026-06-06 21:21:07] PREDICT test (niters=1 tot_its=3 seed_k=6) -> results_spcf_max_cvm125_50k_test_iter70000_pick70000
+[2026-06-06 22:05:11] ZIP -> result_spcf_max_cvm125_50k_iter70000_pick70000.zip
+[2026-06-06 22:05:16] DONE iter70000_pick70000: zip=106M denoised.npy=200
+iter70000_pick70000	70000	experiments/straightpcf_max_cvm125_50k/checkpoint_best_cd0.0001_iter70000.pkl	result_spcf_max_cvm125_50k_iter70000_pick70000.zip	200
+[2026-06-06 22:05:16] ALL DONE. Summary: log/pack_spcf_max_cvm125_50k_summary.txt
