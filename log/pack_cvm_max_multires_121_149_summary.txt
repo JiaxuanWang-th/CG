@@ -1,0 +1,13 @@
+[2026-06-09 10:44:54] CVM max multires batch pack | milestones=121 149
+[2026-06-09 10:44:54] === PACK epoch=121 ckpt=experiments/cvm_max_multires/checkpoint_best_cd0.0002_epoch121.pkl ===
+[2026-06-09 10:44:54] reference: ep80_online=70.52 | CVM125=72.72 | best_val=0.000152@121
+[2026-06-09 10:44:54] PREDICT test -> results_cvm_max_multires_test_epoch121 (data=predict_fast)
+[2026-06-09 11:27:07] ZIP -> result_cvm_max_multires_epoch121.zip (compression -1)
+[2026-06-09 11:27:11] DONE epoch=121: zip=106M denoised.npy=200
+[2026-06-09 11:27:11] === PACK epoch=149 ckpt=experiments/cvm_max_multires/checkpoint_149.pkl ===
+[2026-06-09 11:27:11] reference: ep80_online=70.52 | CVM125=72.72 | best_val=0.000152@121
+[2026-06-09 11:27:11] PREDICT test -> results_cvm_max_multires_test_epoch149 (data=predict_fast)
+[2026-06-09 12:09:00] ZIP -> result_cvm_max_multires_epoch149.zip (compression -1)
+[2026-06-09 12:09:04] DONE epoch=149: zip=106M denoised.npy=200
+[2026-06-09 12:09:04] ALL DONE: result_cvm_max_multires_epoch121.zip 106M
+result_cvm_max_multires_epoch149.zip 106M

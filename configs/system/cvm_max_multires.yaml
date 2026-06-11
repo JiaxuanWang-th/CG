@@ -1,0 +1,4 @@
+__target__: cvm
+
+ckpt_save_dir: experiments/cvm_max_multires
+ckpt_save_name: checkpoint

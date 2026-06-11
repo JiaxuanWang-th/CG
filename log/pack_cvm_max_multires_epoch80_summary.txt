@@ -1,0 +1,5 @@
+[2026-06-08 19:51:06] CVM max multires pack | epoch=80 ckpt=experiments/cvm_max_multires/checkpoint_best_cd0.0002_epoch80.pkl
+[2026-06-08 19:51:06] reference_online: CVM125=72.72 | VM multires ep99=67.36
+[2026-06-08 19:51:06] PREDICT test (niters=1 tot_its=3 seed_k=6) -> results_cvm_max_multires_test_epoch80
+[2026-06-08 20:33:00] ZIP -> result_cvm_max_multires_epoch80.zip
+[2026-06-08 20:33:05] DONE: zip=106M denoised.npy=200

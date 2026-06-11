@@ -1,0 +1,4 @@
+__target__: straightpcf
+
+ckpt_save_dir: experiments/straightpcf_max_multires
+ckpt_save_name: checkpoint

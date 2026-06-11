@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
 from scipy.spatial import cKDTree
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -41,6 +41,49 @@ class AugmentSample(Augment):
             vertices=asset.vertices,
             faces=asset.faces,
             num_samples=self.num_samples,
+            num_vertex_samples=self.num_vertex_samples,
+        )
+        asset.sampled_vertices = sampled_vertices
+
+@dataclass(frozen=True)
+class AugmentSampleMultires(Augment):
+    """Train-time random mesh sampling count (official StraightPCF: 10k/30k/50k)."""
+
+    num_samples_choices: Tuple[int, ...]
+    num_vertex_samples: int = 1024
+
+    @classmethod
+    def parse(cls, **kwargs) -> 'AugmentSampleMultires':
+        cls.check_keys(kwargs)
+        choices = kwargs["num_samples_choices"]
+        if isinstance(choices, Sequence) and not isinstance(choices, str):
+            choices = tuple(int(x) for x in choices)
+        else:
+            raise ValueError(
+                "num_samples_choices must be a list of ints, "
+                f"got {type(choices).__name__}"
+            )
+        if not choices:
+            raise ValueError("num_samples_choices must not be empty")
+        num_vertex_samples = int(kwargs.get("num_vertex_samples", 1024))
+        if num_vertex_samples > min(choices):
+            raise ValueError(
+                "num_vertex_samples cannot exceed the smallest resolution, "
+                f"found: {num_vertex_samples} > {min(choices)}"
+            )
+        return AugmentSampleMultires(
+            num_samples_choices=choices,
+            num_vertex_samples=num_vertex_samples,
+        )
+
+    def apply(self, asset: Asset, **kwargs):
+        assert asset.vertices is not None
+        assert asset.faces is not None
+        num_samples = int(np.random.choice(self.num_samples_choices))
+        sampled_vertices, _, _, _ = sample_vertex_groups(
+            vertices=asset.vertices,
+            faces=asset.faces,
+            num_samples=num_samples,
             num_vertex_samples=self.num_vertex_samples,
         )
         asset.sampled_vertices = sampled_vertices
@@ -224,6 +267,7 @@ class AugmentPatch(Augment):
 def get_augments(*args) -> List[Augment]:
     MAP = {
         "sample": AugmentSample,
+        "sample_multires": AugmentSampleMultires,
         "normalize_pc": AugmentNormalizePC,
         "normalize_noisy_pc": AugmentNormalizeNoisyPC,
         "add_noise": AugmentAddNoise,
