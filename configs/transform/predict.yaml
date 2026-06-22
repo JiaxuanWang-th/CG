@@ -1,0 +1,3 @@
+predict_transform:
+  augments:
+    - __target__: normalize_noisy_pc

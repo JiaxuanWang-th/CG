@@ -1,0 +1,25 @@
+mode: train
+seed: 123
+
+cvm_ckpt: checkpoints/cvm/checkpoint_best.pkl
+
+components:
+  data: train_spcf
+  transform: spcf
+  system: spcf
+  model: spcf
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+  weight_decay: 0
+
+trainer:
+  max_iters: 150000
+  val_freq: 5000
+  start_iter: 0
+  log_interval: 100
+  max_grad_norm: 1000000000

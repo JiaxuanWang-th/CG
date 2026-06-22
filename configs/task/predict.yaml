@@ -1,0 +1,15 @@
+mode: predict
+debug: false
+
+load_ckpt: checkpoints/spcf/checkpoint_best.pkl
+
+components:
+  data: predict
+  transform: predict
+  system: infer
+  model: spcf
+
+writer:
+  __target__: vm
+  save_dir: output/predictions
+  save_name: denoised

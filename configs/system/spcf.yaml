@@ -1,0 +1,4 @@
+__target__: straightpcf
+
+ckpt_save_dir: checkpoints/spcf
+ckpt_save_name: checkpoint

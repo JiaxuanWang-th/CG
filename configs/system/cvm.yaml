@@ -1,0 +1,4 @@
+__target__: cvm
+
+ckpt_save_dir: checkpoints/cvm
+ckpt_save_name: checkpoint

@@ -1,0 +1,2 @@
+# Inference runtime (predict mode). Same loop as vm, but not tied to VM training outputs.
+__target__: infer

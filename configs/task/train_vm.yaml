@@ -1,0 +1,26 @@
+mode: train
+debug: false
+
+# Resume from included midpoint checkpoint (epoch 99 -> 299).
+# To train VM from scratch: remove load_ckpt and set trainer.start_epoch to 0.
+load_ckpt: checkpoints/vm/checkpoint_99.pkl
+
+components:
+  data: train_vm
+  transform: vm
+  system: vm
+  model: vm
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+
+trainer:
+  epochs: 300
+  save_every: 10
+  start_epoch: 100
+  val_chamfer_every: 2
+  val_chamfer_max_samples: 10
