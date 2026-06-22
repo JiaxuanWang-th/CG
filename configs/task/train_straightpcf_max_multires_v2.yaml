@@ -1,0 +1,26 @@
+mode: train
+seed: 123
+
+# SPCF multires v2：新 CVM best 上 0->150k（由 pipeline 写入 cvm_ckpt）
+cvm_ckpt: experiments/cvm_max_multires_v2/checkpoint_best_cd0.0001_epoch225.pkl
+
+components:
+  data: train_spcf_max_multires_cloud
+  transform: straightpcf_official_multires
+  system: straightpcf_max_multires_v2
+  model: straightpcf_max
+
+loss:
+  loss: 1.0
+
+optimizer:
+  __target__: adam
+  lr: 0.0001
+  weight_decay: 0
+
+trainer:
+  max_iters: 150000
+  val_freq: 5000
+  start_iter: 0
+  log_interval: 100
+  max_grad_norm: 1000000000

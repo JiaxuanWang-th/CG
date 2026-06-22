@@ -1,0 +1,78 @@
+# SPCF max multires v2 — 训练 log 整理
+
+## 配置
+- Task: configs/task/train_straightpcf_max_multires_v2.yaml
+- CVM 底座: experiments/cvm_max_multires_v2/checkpoint_best_cd0.0001_epoch225.pkl (线上 74.94)
+- 权重目录: experiments/straightpcf_max_multires_v2/
+- 训练量: 0 -> 150000 iter | val_freq=5000 | seed=123
+- 原始 log: log/train_straightpcf_max_multires_v2.log
+
+## 时间
+- 启动: [2026-06-21 12:08:52] SPCF
+- 打包完成: [2026-06-22 04:47:46 CST]
+- 总时长: ~16.6h (12:08 -> 04:47 次日)
+
+## Val Chamfer 汇总 (每 5000 iter)
+
+[Iter   5000] val_Chamfer=0.000130  <-- best so far
+[Iter  10000] val_Chamfer=0.000129  <-- best so far
+[Iter  15000] val_Chamfer=0.000129
+[Iter  20000] val_Chamfer=0.000129
+[Iter  25000] val_Chamfer=0.000129
+[Iter  30000] val_Chamfer=0.000129
+[Iter  35000] val_Chamfer=0.000129
+[Iter  40000] val_Chamfer=0.000129
+[Iter  45000] val_Chamfer=0.000129
+[Iter  50000] val_Chamfer=0.000129
+[Iter  55000] val_Chamfer=0.000129
+[Iter  60000] val_Chamfer=0.000129
+[Iter  65000] val_Chamfer=0.000129
+[Iter  70000] val_Chamfer=0.000129
+[Iter  75000] val_Chamfer=0.000129
+[Iter  80000] val_Chamfer=0.000128  <-- best so far
+[Iter  85000] val_Chamfer=0.000129
+[Iter  90000] val_Chamfer=0.000129
+[Iter  95000] val_Chamfer=0.000129
+[Iter 100000] val_Chamfer=0.000129
+[Iter 105000] val_Chamfer=0.000129
+[Iter 110000] val_Chamfer=0.000129
+[Iter 115000] val_Chamfer=0.000129
+[Iter 120000] val_Chamfer=0.000129
+[Iter 125000] val_Chamfer=0.000128  <-- global best
+[Iter 130000] val_Chamfer=0.000129
+[Iter 135000] val_Chamfer=0.000129
+[Iter 140000] val_Chamfer=0.000129
+[Iter 145000] val_Chamfer=0.000129
+[Iter 150000] val_Chamfer=0.000129
+
+## 关键结论
+- **全局 val best**: iter **125000**, Chamfer **0.000128**
+- **100k-150k seg_best** (打包用): iter **125000**, Chamfer **0.000128**
+- **140k-150k late_best** (打包用): iter **150000**, Chamfer **0.000129**
+- 150k Chamfer: **0.000129** (末期略升，过拟合迹象)
+
+## 与 v1 multires 对照
+| 项目 | v1 SPCF | v2 SPCF |
+|------|---------|---------|
+| CVM 底座 | ep237 (~73.53) | ep225 (74.94) |
+| 训练 val best | ~0.000131 @ iter80k | ~0.000128 @ iter80k |
+| 线上 best | **74.17** @ iter80k | 待测 |
+
+## 产出 zip
+- result_spcf_max_multires_v2_iter125000_cd0.0001_seg_best.zip (106M)
+- result_spcf_max_multires_v2_iter150000_cdunknown_late_best.zip (106M)
+
+## 打包记录
+[2026-06-22 03:19:31 CST] PACK spcf seg_best experiments/straightpcf_max_multires_v2/checkpoint_best_cd0.0001_iter125000.pkl
+[2026-06-22 04:03:30 CST] DONE spcf seg_best zip=result_spcf_max_multires_v2_iter125000_cd0.0001_seg_best.zip
+[2026-06-22 04:03:30 CST] PACK spcf late_best experiments/straightpcf_max_multires_v2/checkpoint_iter150000.pkl
+[2026-06-22 04:47:46 CST] DONE spcf late_best zip=result_spcf_max_multires_v2_iter150000_cdunknown_late_best.zip
+
+## best_cd checkpoint 文件
+- checkpoint_best_cd0.0001_iter10000.pkl
+- checkpoint_best_cd0.0001_iter125000.pkl
+- checkpoint_best_cd0.0001_iter20000.pkl
+- checkpoint_best_cd0.0001_iter25000.pkl
+- checkpoint_best_cd0.0001_iter40000.pkl
+- checkpoint_best_cd0.0001_iter5000.pkl
+- checkpoint_best_cd0.0001_iter80000.pkl

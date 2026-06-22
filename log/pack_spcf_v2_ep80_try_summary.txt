@@ -1,0 +1,4 @@
+[2026-06-22 10:37:40] PACK SPCF multires | ckpt=experiments/straightpcf_max_multires_v2/checkpoint_best_cd0.0001_iter80000.pkl | reference: CVM237=73.53
+[2026-06-22 10:37:40] PREDICT test -> results_spcf_max_multires_test_iter80000_cd0.0001_ep80_try
+[2026-06-22 11:21:21] ZIP -> result_spcf_max_multires_v2_iter80000_cd0.0001_ep80_try.zip (-1 fast)
+[2026-06-22 11:21:25] DONE: zip=106M denoised.npy=200

@@ -1,0 +1,12 @@
+mode: predict
+debug: false
+load_ckpt: experiments/vm_max_multires/checkpoint_299.pkl
+components:
+  data: predict_fast
+  transform: predict
+  system: vm
+  model: vm_max
+writer:
+  __target__: vm
+  save_dir: results_vm_max_multires_test_epochunknown_cdunknown
+  save_name: denoised

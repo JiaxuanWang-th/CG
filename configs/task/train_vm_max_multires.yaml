@@ -1,7 +1,9 @@
 mode: train
 debug: false
 
-# Stage 1 multires (cloud): VM max from scratch. Do not load vm_max (32768) ckpts.
+# VM multires 续训：ep99 -> ep300
+load_ckpt: experiments/vm_max_multires/checkpoint_99.pkl
+
 components:
   data: train_vm_max_multires_cloud
   transform: vm_multires
@@ -16,8 +18,8 @@ optimizer:
   lr: 0.0001
 
 trainer:
-  epochs: 100
-  save_every: 20
-  start_epoch: 0
-  val_chamfer_every: 1
-  val_chamfer_max_samples: 20
+  epochs: 300
+  save_every: 10
+  start_epoch: 100
+  val_chamfer_every: 2
+  val_chamfer_max_samples: 10

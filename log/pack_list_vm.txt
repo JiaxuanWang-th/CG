@@ -1,0 +1,4 @@
+PICK seg_best	289	0.000155	experiments/vm_max_multires/checkpoint_289.pkl
+PICK near_end	299	n/a	experiments/vm_max_multires/checkpoint_299.pkl
+PACK	seg_best	experiments/vm_max_multires/checkpoint_289.pkl
+PACK	near_end	experiments/vm_max_multires/checkpoint_299.pkl

@@ -8,7 +8,7 @@ source "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate jittor
 export CUDA_VISIBLE_DEVICES=0
 
-CKPT_DIR="experiments/straightpcf_max_multires"
+CKPT_DIR="${CKPT_DIR:-experiments/straightpcf_max_multires}"
 DATA_COMPONENT="${DATA_COMPONENT:-predict_fast}"
 
 if [[ -n "${CKPT:-}" ]]; then
@@ -28,12 +28,24 @@ TAG="$(python3 - <<PY
 import os, re
 base = os.path.basename("$pick")
 m = re.search(r"iter(\d+)", base)
-print(f"iter{m.group(1)}" if m else "custom")
+it = m.group(1) if m else "custom"
+m2 = re.search(r"cd([\d.]+)_iter", base)
+cd = m2.group(1) if m2 else "unknown"
+label = os.environ.get("PACK_LABEL", "")
+suffix = f"_{label}" if label else ""
+print(f"iter{it}_cd{cd}{suffix}")
+PY
+)"
+
+ZIP_PREFIX="$(python3 - <<PY
+import os
+d = os.environ.get("CKPT_DIR", "experiments/straightpcf_max_multires")
+print("result_spcf_max_multires_v2" if d.endswith("_v2") else "result_spcf_max_multires")
 PY
 )"
 
 OUT_DIR="results_spcf_max_multires_test_${TAG}"
-ZIP="result_spcf_max_multires_${TAG}.zip"
+ZIP="${ZIP_PREFIX}_${TAG}.zip"
 PRED_LOG="log/predict_spcf_max_multires_test_${TAG}.log"
 TASK="configs/task/predict_spcf_max_multires_test_${TAG}.yaml"
 SUMMARY="${SUMMARY:-log/pack_spcf_max_multires_${TAG}_summary.txt}"

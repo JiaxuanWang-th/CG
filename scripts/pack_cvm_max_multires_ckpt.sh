@@ -19,11 +19,13 @@ fi
 TAG="$(python3 - <<PY
 import os, re
 base = os.path.basename("$CKPT")
-m = re.search(r"epoch(\d+)", base)
+m = re.search(r"epoch(\d+)", base) or re.search(r"checkpoint_(\d+)\.pkl", base)
 ep = m.group(1) if m else "unknown"
 m2 = re.search(r"cd([\d.]+)_epoch", base)
 cd = m2.group(1) if m2 else "unknown"
-print(f"epoch{ep}_cd{cd}")
+label = os.environ.get("PACK_LABEL", "")
+suffix = f"_{label}" if label else ""
+print(f"epoch{ep}_cd{cd}{suffix}")
 PY
 )"
 

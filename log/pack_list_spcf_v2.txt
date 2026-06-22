@@ -1,0 +1,4 @@
+PICK seg_best	125000	0.000128	experiments/straightpcf_max_multires_v2/checkpoint_best_cd0.0001_iter125000.pkl
+PICK late_best	150000	0.000129	experiments/straightpcf_max_multires_v2/checkpoint_iter150000.pkl
+PACK	seg_best	experiments/straightpcf_max_multires_v2/checkpoint_best_cd0.0001_iter125000.pkl
+PACK	late_best	experiments/straightpcf_max_multires_v2/checkpoint_iter150000.pkl

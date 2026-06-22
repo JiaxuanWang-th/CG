@@ -1,0 +1,2 @@
+[2026-06-19 13:47:04] PACK VM multires ckpt=experiments/vm_max_multires/checkpoint_299.pkl
+[2026-06-19 14:08:22] DONE zip=result_vm_max_multires_epochunknown_cdunknown.zip

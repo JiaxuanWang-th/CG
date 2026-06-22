@@ -1,0 +1,15 @@
+mode: predict
+debug: false
+
+load_ckpt: experiments/straightpcf_max_multires_v2/checkpoint_best_cd0.0001_iter80000.pkl
+
+components:
+  data: predict_fast
+  transform: predict
+  system: vm
+  model: straightpcf_max
+
+writer:
+  __target__: vm
+  save_dir: results_spcf_max_multires_test_iter80000_cd0.0001_ep80_try
+  save_name: denoised

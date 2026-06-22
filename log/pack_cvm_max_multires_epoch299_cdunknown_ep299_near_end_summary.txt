@@ -1,0 +1,4 @@
+[2026-06-20 18:00:14] PACK CVM multires | ckpt=experiments/cvm_max_multires_v2/checkpoint_299.pkl tag=epoch299_cdunknown_ep299_near_end
+[2026-06-20 18:00:14] PREDICT test -> results_cvm_max_multires_test_epoch299_cdunknown_ep299_near_end
+[2026-06-20 18:42:10] ZIP -> result_cvm_max_multires_epoch299_cdunknown_ep299_near_end.zip
+[2026-06-20 18:42:15] DONE: zip=106M denoised.npy=200
