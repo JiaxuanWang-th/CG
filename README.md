@@ -24,7 +24,7 @@ python run.py --task configs/task/predict.yaml --seed 123
 cd output/predictions && zip -r ../../submission.zip shapenet/
 ```
 
-默认加载 `checkpoints/spcf/checkpoint_best.pkl`（线上全流程 **75.54** 分）。换权重只需改 `configs/task/predict.yaml` 中的 `load_ckpt`，或：
+默认加载 `checkpoints/spcf/checkpoint_best.pkl`（线上全流程 **75.57** 分）。换权重只需改 `configs/task/predict.yaml` 中的 `load_ckpt`，或：
 
 ```bash
 CKPT=checkpoints/spcf/checkpoint_best.pkl bash scripts/pack_submission.sh
@@ -129,8 +129,8 @@ submission.zip
 
 | 指标 | 分数 |
 |------|------|
-| **总分** | **75.54** |
-| Chamfer Distance | 62.46 |
+| **总分** | **75.57** |
+| Chamfer Distance | 62.51 |
 | Point-to-Surface | 88.63 |
 
 ---
